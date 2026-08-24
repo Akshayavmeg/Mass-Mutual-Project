@@ -1,59 +1,49 @@
-import { useEffect, useState } from "react";
-import { getHealth } from "./api/client.js";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { UserProvider, useUser } from "./context/UserContext.jsx";
+import AppShell from "./layouts/AppShell.jsx";
+import { NotificationProvider } from "./layouts/NotificationContext.jsx";
+import AuditPage from "./pages/AuditPage.jsx";
+import ChequeDetailPage from "./pages/ChequeDetailPage.jsx";
+import ChequeHistoryPage from "./pages/ChequeHistoryPage.jsx";
+import DashboardPage from "./pages/DashboardPage.jsx";
+import NotFoundPage from "./pages/NotFoundPage.jsx";
+import ReviewDetailPage from "./pages/ReviewDetailPage.jsx";
+import ReviewQueuePage from "./pages/ReviewQueuePage.jsx";
+import RoleSelectPage from "./pages/RoleSelectPage.jsx";
+import SystemStatusPage from "./pages/SystemStatusPage.jsx";
+import UploadPage from "./pages/UploadPage.jsx";
 
-export default function App() {
-  const [health, setHealth] = useState(null);
-  const [error, setError] = useState(null);
+function RootRoutes() {
+  const { role } = useUser();
 
-  useEffect(() => {
-    let cancelled = false;
-
-    getHealth()
-      .then((data) => {
-        if (!cancelled) setHealth(data);
-      })
-      .catch((err) => {
-        if (!cancelled) setError(err.message);
-      });
-
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  if (!role) return <RoleSelectPage />;
 
   return (
-    <main className="min-h-screen bg-slate-50 flex items-center justify-center p-6">
-      <div className="max-w-md w-full rounded-lg border border-slate-200 bg-white p-6 shadow-sm">
-        <h1 className="text-lg font-semibold text-slate-900">
-          Mass Mutual Cheque Fraud Detection System
-        </h1>
-        <p className="mt-1 text-sm text-slate-500">Development foundation status</p>
+    <Routes>
+      <Route element={<AppShell />}>
+        <Route path="/" element={<DashboardPage />} />
+        <Route path="/upload" element={<UploadPage />} />
+        <Route path="/cheques" element={<ChequeHistoryPage />} />
+        <Route path="/cheques/:chequeId" element={<ChequeDetailPage />} />
+        <Route path="/reviews" element={<ReviewQueuePage />} />
+        <Route path="/reviews/:reviewCaseId" element={<ReviewDetailPage />} />
+        <Route path="/audit" element={<AuditPage />} />
+        <Route path="/audit/:chequeId" element={<AuditPage />} />
+        <Route path="/status" element={<SystemStatusPage />} />
+        <Route path="*" element={<NotFoundPage />} />
+      </Route>
+    </Routes>
+  );
+}
 
-        <div className="mt-4 rounded-md bg-slate-50 p-4 text-sm">
-          {error && (
-            <p className="text-red-600" data-testid="backend-status-error">
-              Unable to reach backend: {error}
-            </p>
-          )}
-          {!error && !health && <p data-testid="backend-status-loading">Checking backend...</p>}
-          {health && (
-            <dl className="space-y-1" data-testid="backend-status-ok">
-              <div className="flex justify-between">
-                <dt className="text-slate-500">Backend status</dt>
-                <dd className="font-medium text-slate-900">{health.status}</dd>
-              </div>
-              <div className="flex justify-between">
-                <dt className="text-slate-500">Service</dt>
-                <dd className="font-medium text-slate-900">{health.service}</dd>
-              </div>
-              <div className="flex justify-between">
-                <dt className="text-slate-500">Database</dt>
-                <dd className="font-medium text-slate-900">{health.database}</dd>
-              </div>
-            </dl>
-          )}
-        </div>
-      </div>
-    </main>
+export default function App() {
+  return (
+    <BrowserRouter>
+      <NotificationProvider>
+        <UserProvider>
+          <RootRoutes />
+        </UserProvider>
+      </NotificationProvider>
+    </BrowserRouter>
   );
 }

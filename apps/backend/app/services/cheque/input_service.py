@@ -79,3 +79,7 @@ def handle_upload(filename: str | None, content: bytes, *, input_source: str = "
 
 def get_cheque_record(cheque_id: str) -> dict | None:
     return get_cheque_repository().get(cheque_id)
+
+
+def list_cheque_records() -> list[dict]:
+    return get_cheque_repository().list_all()

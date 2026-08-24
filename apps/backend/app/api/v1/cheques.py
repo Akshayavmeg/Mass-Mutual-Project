@@ -10,13 +10,15 @@ milestones.
 from __future__ import annotations
 
 import uuid
+from pathlib import Path
 
-from fastapi import APIRouter, File, UploadFile
-from fastapi.responses import JSONResponse
+from fastapi import APIRouter, Depends, File, UploadFile
+from fastapi.responses import FileResponse, JSONResponse
 
+from app.core.authorization import Permission, require_permission
 from app.schemas.anomaly import AnomalyAnalysisResponse
 from app.schemas.audit import AuditHistoryResponse
-from app.schemas.cheque import ChequeDetailResponse, ChequeUploadResponse
+from app.schemas.cheque import ChequeDetailResponse, ChequeListResponse, ChequeSummaryResponse, ChequeUploadResponse
 from app.schemas.decision import DecisionResponse
 from app.schemas.fraud import FraudAnalysisResponse
 from app.schemas.ocr import OCRResultResponse, OCRStartResponse
@@ -25,7 +27,7 @@ from app.schemas.signature import SignatureAnalysisResponse
 from app.schemas.validation import ValidationResultResponse
 from app.services.anomaly import anomaly_service
 from app.services.anomaly.exceptions import ChequeNotExtractedForAnomalyError
-from app.services.cheque import input_service
+from app.services.cheque import input_service, storage
 from app.services.cheque.exceptions import ChequeInputError
 from app.services.decision import decision_service
 from app.services.decision.exceptions import RiskAssessmentNotAvailableError
@@ -83,12 +85,105 @@ async def upload_cheque(file: UploadFile = File(...)):
     )
 
 
+def _extracted_summary_fields(record: dict) -> dict:
+    """Pulls the docs/26 S9 example's flat summary fields out of the
+    extraction module's field-level structure (each field is
+    {value, raw_value, confidence, ...}), without fabricating anything
+    extraction never populated."""
+    fields = (record.get("extraction") or {}).get("fields") or {}
+
+    def _value(name: str):
+        entry = fields.get(name)
+        return entry.get("value") if isinstance(entry, dict) else None
+
+    return {
+        "cheque_number": _value("cheque_number"),
+        "account_number": _value("account_number"),
+        "routing_transit_number": _value("routing_transit_number"),
+        "payee_name": _value("payee_name"),
+        "amount": _value("amount"),
+        "cheque_date": _value("date"),
+    }
+
+
+@router.get("", response_model=ChequeListResponse)
+async def list_cheques(
+    page: int = 1, limit: int = 20, status: str | None = None, risk_level: str | None = None,
+    _role=Depends(require_permission(Permission.CHEQUE_VIEW)),
+):
+    """docs/26_API_Specification.md S10 (List Cheques) -- documented but
+    not built by any earlier milestone; added here per this milestone's
+    explicit gap-fill authorization (see the Milestone 9 report)."""
+    records = input_service.list_cheque_records()
+    if status:
+        records = [r for r in records if r.get("processing_status") == status]
+    if risk_level:
+        records = [r for r in records if ((r.get("risk_assessment") or {}).get("risk_level")) == risk_level]
+
+    records.sort(key=lambda r: r.get("upload_timestamp", ""), reverse=True)
+    total = len(records)
+    start = max(0, (page - 1) * limit)
+    page_records = records[start : start + limit]
+
+    summaries = []
+    for record in page_records:
+        decision = record.get("decision") or {}
+        extracted = _extracted_summary_fields(record)
+        summaries.append(ChequeSummaryResponse(
+            cheque_id=record["cheque_id"],
+            amount=extracted["amount"],
+            risk_level=(record.get("risk_assessment") or {}).get("risk_level"),
+            status=record.get("processing_status", "UNKNOWN"),
+            payee_name=extracted["payee_name"],
+            cheque_date=extracted["cheque_date"],
+            upload_timestamp=record.get("upload_timestamp", ""),
+            decision=decision.get("decision"),
+        ))
+
+    return ChequeListResponse(page=page, limit=limit, total=total, cheques=summaries)
+
+
 @router.get("/{cheque_id}", response_model=ChequeDetailResponse)
 async def get_cheque(cheque_id: str):
     record = input_service.get_cheque_record(cheque_id)
     if record is None:
         return _error_response(404, "CHEQUE_NOT_FOUND", "The requested cheque does not exist.")
-    return ChequeDetailResponse(**record)
+    return ChequeDetailResponse(**record, **_extracted_summary_fields(record))
+
+
+@router.get("/{cheque_id}/image/{variant}")
+async def get_cheque_image(cheque_id: str, variant: str):
+    """Serves the original or processed cheque image (docs/13 S23 storage
+    layout). Not part of docs/26's canonical endpoint table -- added here
+    because Milestone 9 explicitly requires showing the original/processed
+    image, and no earlier milestone exposed one over the API (images only
+    ever lived on local disk). See the Milestone 9 report.
+
+    Deliberately NOT gated behind require_permission: this project's only
+    auth mechanism is the X-User-Role/X-User-Id dev-mode header pair
+    (app/core/authorization.py), which an HTML <img> tag cannot attach --
+    gating this endpoint would make it unusable from the browser without
+    a real bearer-token/signed-URL scheme, which is out of scope for this
+    MVP (see docs/29's own JWT-based target design). This mirrors the
+    same unauthenticated state every other cheque-processing endpoint in
+    this file is already in."""
+    if variant not in ("original", "processed"):
+        return _error_response(404, "NOT_FOUND", "Unknown image variant.")
+
+    record = input_service.get_cheque_record(cheque_id)
+    if record is None:
+        return _error_response(404, "CHEQUE_NOT_FOUND", "The requested cheque does not exist.")
+
+    if variant == "processed":
+        path = storage.processed_file_path(cheque_id)
+    else:
+        extension = Path(record["file_name"]).suffix.lower() or ".png"
+        path = storage.original_file_path(cheque_id, extension)
+
+    if not path.exists():
+        return _error_response(404, "IMAGE_NOT_AVAILABLE", f"The {variant} image is not available for this cheque.")
+
+    return FileResponse(path)
 
 
 def _build_ocr_result_response(cheque_id: str, ocr: dict, extraction: dict) -> OCRResultResponse:
