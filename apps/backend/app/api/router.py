@@ -2,8 +2,9 @@ from __future__ import annotations
 
 from fastapi import APIRouter
 
-from app.api.v1 import cheques, health
+from app.api.v1 import cheques, health, reviews
 
 api_router = APIRouter()
 api_router.include_router(health.router, tags=["health"])
 api_router.include_router(cheques.router, tags=["cheques"])
+api_router.include_router(reviews.router, tags=["reviews"])

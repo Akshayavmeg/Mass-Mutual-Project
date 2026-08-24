@@ -14,16 +14,28 @@ import uuid
 from fastapi import APIRouter, File, UploadFile
 from fastapi.responses import JSONResponse
 
+from app.schemas.anomaly import AnomalyAnalysisResponse
 from app.schemas.cheque import ChequeDetailResponse, ChequeUploadResponse
+from app.schemas.decision import DecisionResponse
 from app.schemas.fraud import FraudAnalysisResponse
 from app.schemas.ocr import OCRResultResponse, OCRStartResponse
+from app.schemas.risk import RiskScoreResponse
+from app.schemas.signature import SignatureAnalysisResponse
 from app.schemas.validation import ValidationResultResponse
+from app.services.anomaly import anomaly_service
+from app.services.anomaly.exceptions import ChequeNotExtractedForAnomalyError
 from app.services.cheque import input_service
 from app.services.cheque.exceptions import ChequeInputError
+from app.services.decision import decision_service
+from app.services.decision.exceptions import RiskAssessmentNotAvailableError
 from app.services.fraud import fraud_service
 from app.services.fraud.exceptions import ChequeNotValidatedError
 from app.services.ocr import pipeline as ocr_pipeline
 from app.services.ocr.exceptions import ChequeNotPreprocessedError
+from app.services.risk import risk_service
+from app.services.risk.exceptions import FraudAnalysisNotAvailableError
+from app.services.signature import signature_service
+from app.services.signature.exceptions import ChequeNotExtractedForSignatureError
 from app.services.validation import validation_service
 from app.services.validation.exceptions import ChequeNotExtractedError
 
@@ -183,3 +195,64 @@ async def get_fraud_analysis(cheque_id: str):
         return _error_response(404, "FRAUD_ANALYSIS_NOT_RUN", "Fraud analysis has not been run for this cheque yet.")
 
     return _build_fraud_analysis_response(payload)
+
+
+@router.post("/{cheque_id}/signature-analysis", response_model=SignatureAnalysisResponse)
+async def run_signature_analysis(cheque_id: str):
+    try:
+        result = signature_service.analyze_signature(cheque_id)
+    except KeyError:
+        return _error_response(404, "CHEQUE_NOT_FOUND", "The requested cheque does not exist.")
+    except ChequeNotExtractedForSignatureError as exc:
+        return _error_response(422, "CHEQUE_NOT_EXTRACTED", str(exc))
+
+    return SignatureAnalysisResponse(**result.as_dict())
+
+
+@router.post("/{cheque_id}/anomaly-analysis", response_model=AnomalyAnalysisResponse)
+async def run_anomaly_analysis(cheque_id: str):
+    try:
+        result = anomaly_service.analyze_anomaly(cheque_id)
+    except KeyError:
+        return _error_response(404, "CHEQUE_NOT_FOUND", "The requested cheque does not exist.")
+    except ChequeNotExtractedForAnomalyError as exc:
+        return _error_response(422, "CHEQUE_NOT_EXTRACTED", str(exc))
+
+    return AnomalyAnalysisResponse(**result.as_dict())
+
+
+@router.post("/{cheque_id}/risk-score", response_model=RiskScoreResponse)
+async def run_risk_score(cheque_id: str):
+    try:
+        result = risk_service.calculate_risk(cheque_id)
+    except KeyError:
+        return _error_response(404, "CHEQUE_NOT_FOUND", "The requested cheque does not exist.")
+    except FraudAnalysisNotAvailableError as exc:
+        return _error_response(422, "FRAUD_ANALYSIS_NOT_RUN", str(exc))
+
+    return RiskScoreResponse(**result.as_dict())
+
+
+@router.post("/{cheque_id}/decision", response_model=DecisionResponse)
+async def run_decision(cheque_id: str):
+    try:
+        result = decision_service.make_decision(cheque_id)
+    except KeyError:
+        return _error_response(404, "CHEQUE_NOT_FOUND", "The requested cheque does not exist.")
+    except RiskAssessmentNotAvailableError as exc:
+        return _error_response(422, "RISK_ASSESSMENT_NOT_RUN", str(exc))
+
+    return DecisionResponse(**result.as_dict())
+
+
+@router.get("/{cheque_id}/decision", response_model=DecisionResponse)
+async def get_decision(cheque_id: str):
+    record = input_service.get_cheque_record(cheque_id)
+    if record is None:
+        return _error_response(404, "CHEQUE_NOT_FOUND", "The requested cheque does not exist.")
+
+    payload = decision_service.get_decision(cheque_id)
+    if payload is None:
+        return _error_response(404, "DECISION_NOT_RUN", "A decision has not been made for this cheque yet.")
+
+    return DecisionResponse(**payload)

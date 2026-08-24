@@ -76,6 +76,17 @@ class TransactionRecord:
 
 
 @dataclass(frozen=True)
+class ReferenceSignatureRecord:
+    """One reference signature on file for an account (docs/18_Signature_Analysis.md
+    S9, S28: an account may have multiple reference signatures)."""
+
+    signature_id: str
+    account_number: str
+    signature_file: str  # path relative to data/mock_banking_data/
+    variant: str  # "genuine" | "genuine_variation"
+
+
+@dataclass(frozen=True)
 class ImageHashRecord:
     """A previously processed cheque's image fingerprints (docs/19_Duplicate_Detection.md
     S8-S16 Level 2/3 duplicate evidence). Sourced from the subset of
@@ -108,6 +119,8 @@ class BankingDataRepository(Protocol):
 
     def get_account_cheque_number_history(self, account_number: str) -> list[str]: ...
 
+    def get_reference_signatures(self, account_number: str) -> list[ReferenceSignatureRecord]: ...
+
 
 class CSVBankingDataRepository:
     """Loads data/mock_banking_data/{accounts,cheque_issuance,
@@ -121,6 +134,7 @@ class CSVBankingDataRepository:
         self._processed_history: list[DuplicateMatch] | None = None
         self._image_hashes: list[ImageHashRecord] | None = None
         self._transactions: dict[str, list[TransactionRecord]] | None = None
+        self._reference_signatures: dict[str, list[ReferenceSignatureRecord]] | None = None
 
     def _ensure_loaded(self) -> None:
         if self._accounts is not None:
@@ -132,6 +146,23 @@ class CSVBankingDataRepository:
             self._issuance = self._load_issuance()
             self._processed_history, self._image_hashes = self._load_processed_history()
             self._transactions = self._load_transactions()
+            self._reference_signatures = self._load_reference_signatures()
+
+    def _load_reference_signatures(self) -> dict[str, list[ReferenceSignatureRecord]]:
+        path = self._data_dir / "reference_signatures" / "signatures_index.csv"
+        try:
+            rows = self._read_csv(path)
+        except OSError as exc:
+            raise BankingDataUnavailableError(f"Unable to read {path}: {exc}") from exc
+
+        by_account: dict[str, list[ReferenceSignatureRecord]] = {}
+        for row in rows:
+            record = ReferenceSignatureRecord(
+                signature_id=row["signature_id"], account_number=row["account_number"],
+                signature_file=row["signature_file"], variant=row["variant"],
+            )
+            by_account.setdefault(record.account_number, []).append(record)
+        return by_account
 
     def _load_accounts(self) -> dict[str, AccountRecord]:
         path = self._data_dir / "accounts.csv"
@@ -275,6 +306,10 @@ class CSVBankingDataRepository:
     def get_account_cheque_number_history(self, account_number: str) -> list[str]:
         self._ensure_loaded()
         return [r.cheque_number for r in self._processed_history if r.account_number == account_number]
+
+    def get_reference_signatures(self, account_number: str) -> list[ReferenceSignatureRecord]:
+        self._ensure_loaded()
+        return list(self._reference_signatures.get(account_number, []))
 
 
 _repository: CSVBankingDataRepository | None = None

@@ -240,6 +240,98 @@ class Settings(BaseSettings):
     # S18/S1 indicator #12).
     validation_multiple_failures_threshold: int = 2
 
+    # --- Milestone 6: Signature Analysis ---------------------------------
+    # docs/18_Signature_Analysis.md S12 Method 2 (feature-based
+    # comparison). Calibration note (Milestone 6 report): raw pixel/NCC
+    # similarity between this project's procedurally-generated synthetic
+    # signatures was measured to carry almost no discriminative signal
+    # (genuine-vs-own-variation and genuine-vs-unrelated-forged scored in
+    # the same noisy band), because each reference is an independently
+    # random stroke pattern with no shared underlying "handwriting
+    # identity". Aggregate structural features (ink density, stroke/
+    # connected-component count, bounding-box extent) showed a real, if
+    # weak, measured separation instead, so the comparator is
+    # feature-based rather than pixel-similarity-based.
+    # Measured against the real Milestone 1 signature test dataset: sharp
+    # (genuine/partial/altered) samples measure blur-variance in the
+    # thousands (~5,000-15,000); the deliberately blurred "low_quality"
+    # sample measures ~22. 100.0 sits comfortably between the two.
+    signature_quality_blur_variance_threshold: float = 100.0
+    signature_quality_min_ink_pixel_count: int = 40
+    signature_feature_weights: dict[str, float] = {
+        "density": 1.0, "component_count": 1.0, "bbox_width": 1.0, "bbox_height": 1.0, "aspect_ratio": 1.0,
+    }
+    # Similarity = 1 / (1 + weighted_feature_distance / scale). Calibrated
+    # against this project's own measured genuine/forged distributions
+    # (Milestone 6 report), not the illustrative 0.85/0.70/0.50 example
+    # values in docs/18 S14, which assume much stronger separation than
+    # this synthetic dataset actually exhibits.
+    signature_similarity_distance_scale: float = 20.0
+    signature_risk_thresholds: dict[str, float] = {"LOW": 0.55, "MEDIUM": 0.45, "HIGH": 0.35}
+    signature_engine_version: str = "signature-v1.0-feature-based"
+
+    # --- Milestone 6: Anomaly Detection -----------------------------------
+    # Reuses the same statistical thresholds as Milestone 5's
+    # pattern-indicator detectors (pattern_amount_zscore_threshold etc.)
+    # since both analyze the identical underlying statistics; this module
+    # additionally owns the combined weighted anomaly_score (docs/20 S20).
+    anomaly_weights: dict[str, float] = {
+        "amount": 30.0, "frequency": 20.0, "payee": 20.0, "sequence": 10.0, "timing": 10.0, "transaction_pattern": 10.0,
+    }
+    # Amount Z-score severity bands. docs/20 S11's illustrative example
+    # (|Z| 2-3 Moderate, 3-4 High, >4 Critical) was measured against this
+    # project's own dataset (Milestone 6 report) and found far too
+    # sensitive: transactions.csv's historical amounts are drawn from a
+    # systematically narrower/lower range than actual cheque amounts
+    # (transaction mean ~$10.7k vs cheque mean ~$18.6k), so the naive
+    # bands flagged 63% of ALL cheques -- including most VALID ones --
+    # as at least "Moderate". These recalibrated cutoffs were chosen
+    # because they measured 0% false positives on the real VALID-category
+    # sample while still separating genuinely extreme cases (e.g. the
+    # MULTIPLE_ANOMALIES category, whose cheques are deliberately amount-
+    # tampered, stayed correctly flagged at every tested cutoff).
+    anomaly_amount_zscore_bands: dict[str, float] = {"MODERATE": 5.0, "HIGH": 8.0, "CRITICAL": 12.0}
+    anomaly_risk_bands: dict[str, list[int]] = {
+        "LOW": [0, 24], "MEDIUM": [25, 49], "HIGH": [50, 74], "CRITICAL": [75, 100],
+    }
+    anomaly_engine_version: str = "anomaly-v1.0-rule-based-statistical"
+
+    # --- Milestone 6: Overall Risk Scoring ---------------------------------
+    # docs/21_Risk_Scoring.md S7 weight table -- deliberately DISTINCT from
+    # Milestone 5's own fraud_score_weights/fraud_risk_bands (docs/17 S21):
+    # this is the separate, later-stage Risk Scoring Engine that combines
+    # fraud, validation, signature, duplicate, anomaly, and OCR-confidence
+    # signals, per docs/25's separate fraud_results/risk_assessments tables.
+    risk_factor_weights: dict[str, float] = {
+        "tampering": 20.0, "signature": 20.0, "duplicate": 20.0, "anomaly": 20.0,
+        "validation": 10.0, "ocr": 5.0, "other": 5.0,
+    }
+    risk_bands: dict[str, list[int]] = {
+        "LOW": [0, 24], "MEDIUM": [25, 49], "HIGH": [50, 74], "CRITICAL": [75, 100],
+    }
+    risk_tampering_contribution_bands: dict[str, float] = {"NONE": 0, "LOW": 5, "MODERATE": 10, "HIGH": 15, "STRONG": 20}
+    # image_tampering_score (0.00-1.00) cut points below which the NONE/LOW/MODERATE/HIGH band applies (docs/21 S8 gives labels only, no numeric cutoffs).
+    risk_tampering_score_cutoffs: dict[str, float] = {"NONE": 0.15, "LOW": 0.30, "MODERATE": 0.50, "HIGH": 0.75}
+    risk_signature_contribution_bands: dict[str, float] = {"LOW": 0, "MEDIUM": 10, "HIGH": 15, "CRITICAL": 20, "UNAVAILABLE": 0}
+    risk_duplicate_contribution_bands: dict[str, float] = {"NEW": 0, "POTENTIAL_DUPLICATE": 10, "CONFIRMED_DUPLICATE": 20}
+    risk_validation_contribution_bands: dict[str, float] = {"PASS": 0, "WARNING": 3, "FAIL": 10}
+    risk_ocr_confidence_contribution_bands: dict[str, float] = {"95": 0, "85": 1, "70": 3, "0": 5}
+    risk_config_version: str = "risk-v1.0"
+
+    # --- Milestone 7: Decision Engine -------------------------------------
+    # docs/22_Decision_Engine.md S9 hard-rule/priority hierarchy. Priority
+    # 3 (risk-score fallback) deliberately REUSES Milestone 6's own
+    # risk_bands/risk_level (LOW/MEDIUM/HIGH/CRITICAL) rather than
+    # re-deriving numeric cutoffs a second time -- risk_bands already
+    # equals docs/22 S20's example thresholds (0-24/25-49/50-74/75-100).
+    decision_min_ocr_confidence: float = 70.0  # below this: MANDATORY_REVIEW (docs/22 S9 Priority 2 "insufficient_OCR_confidence")
+    decision_policy_version: str = "decision-policy-v1.0"
+    decision_engine_version: str = "decision-v1.0"
+
+    # --- Milestone 7: Manual Review Workflow ------------------------------
+    review_priority_by_risk_level: dict[str, str] = {"CRITICAL": "CRITICAL", "HIGH": "HIGH", "MEDIUM": "MEDIUM", "LOW": "LOW"}
+    review_workflow_version: str = "review-v1.0"
+
     def yaml_config(self) -> dict[str, Any]:
         return load_yaml_config(self.environment)
 
