@@ -82,7 +82,7 @@ The documentation describes the complete lifecycle of the system, from cheque im
 
 | No. | Document | Description |
 |---|---|---|
-| 35 | [MVP Roadmap](35_MVP_Roadmap.md) | Defines the planned development stages for the MVP. |
+| 35 | [MVP Roadmap](35_MVP_Roadmap.md) | Defines the planned development stages for the MVP, including the official Milestone 0–9 implementation plan (Section 4.1). |
 | 36 | [Development Guidelines](36_Development_Guidelines.md) | Defines coding, repository, testing, documentation, and development practices. |
 | 37 | [Deployment Architecture](37_Deployment_Architecture.md) | Describes application deployment and infrastructure architecture. |
 | 38 | [Risk Analysis](38_Risk_Analysis.md) | Identifies technical, operational, security, data, and project risks. |

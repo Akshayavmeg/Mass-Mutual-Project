@@ -1,0 +1,14 @@
+# Shared, non-secret application configuration.
+# Environment-specific files (development.yaml, testing.yaml) override these
+# values. Secrets (database credentials, signing keys) must never be placed
+# here -- they belong in environment variables / .env (see
+# apps/backend/.env.example).
+
+app:
+  name: "Mass Mutual Cheque Fraud Detection System"
+  api_version: "v1"
+  cors_origins:
+    - "http://localhost:3000"
+
+logging:
+  level: "INFO"

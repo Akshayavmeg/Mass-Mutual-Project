@@ -899,7 +899,7 @@ Example:
   "cheque_id": "SYN-00001",
   "label": "VALID",
   "amount": 25000,
-  "payee": "John Doe"
+  "payee_name": "John Doe"
 }
 ```
 

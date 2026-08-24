@@ -407,7 +407,7 @@ Example:
 {
   "cheque_number": "102345",
   "account_number": "XXXXXX7890",
-  "payee": "ABC TRADERS",
+  "payee_name": "ABC TRADERS",
   "amount": 25000.00,
   "date": "2026-08-20"
 }
@@ -1041,37 +1041,41 @@ Important processing results should be linked to the cheque's unique Processing 
 
 # 33. Proposed Backend Module Structure
 
-The component architecture can be reflected in the backend project structure:
+Per ADR-0006 (Overall Architecture Style), the backend follows a **layer-based top-level structure** (consistent with `docs/36_Development_Guidelines.md` §4), with the processing-stage domains described in this document nested inside `app/services/`:
 
 ```text
 apps/
 └── backend/
     ├── app/
     │   ├── api/
-    │   ├── auth/
-    │   ├── cheque/
-    │   ├── preprocessing/
-    │   ├── ocr/
-    │   ├── extraction/
-    │   ├── validation/
-    │   ├── fraud/
-    │   │   ├── tampering/
-    │   │   ├── signature/
-    │   │   ├── duplicate/
-    │   │   └── anomaly/
-    │   ├── risk/
-    │   ├── decision/
-    │   ├── review/
-    │   ├── audit/
-    │   ├── reporting/
-    │   ├── database/
-    │   └── config/
+    │   ├── core/
+    │   ├── models/
+    │   ├── repositories/
+    │   ├── schemas/
+    │   ├── services/
+    │   │   ├── auth/
+    │   │   ├── cheque/
+    │   │   ├── preprocessing/
+    │   │   ├── ocr/
+    │   │   ├── extraction/
+    │   │   ├── validation/
+    │   │   ├── fraud/
+    │   │   │   ├── tampering/
+    │   │   │   ├── signature/
+    │   │   │   ├── duplicate/
+    │   │   │   └── anomaly/
+    │   │   ├── risk/
+    │   │   ├── decision/
+    │   │   ├── review/
+    │   │   ├── audit/
+    │   │   └── reporting/
+    │   └── utils/
     │
     ├── tests/
     └── main.py
 ```
 
-This is a **logical structure**; the exact implementation structure may be adjusted during development.
+This reconciles the stage-based grouping shown above with the layer-based top-level structure in `36_Development_Guidelines.md` §4: `api/`, `core/`, `models/`, `repositories/`, and `schemas/` hold the cross-cutting layers (routing, configuration/logging, ORM models, data-access, and request/response schemas respectively), while each processing-stage component described earlier in this document (Cheque Input Manager, Image Preprocessing, OCR, Extraction, Validation Engine, Fraud Detection Engine and its sub-components, Risk Scoring, Decision Engine, Manual Review, Audit Trail, Reporting) becomes a subpackage under `app/services/`. This is a **logical structure**; minor implementation adjustments are expected during development, but the top-level layering should not diverge from ADR-0006 without a corresponding ADR update.
 
 ---
 

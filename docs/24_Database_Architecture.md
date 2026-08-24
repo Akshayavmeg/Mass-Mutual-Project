@@ -217,7 +217,7 @@ CHEQUE
    │
    ├──────────► MANUAL_REVIEW_CASE
    │
-   └──────────► AUDIT_EVENT
+   └──────────► AUDIT_LOG
 ```
 
 ---
@@ -241,7 +241,7 @@ The initial database will contain the following major tables:
 | `decisions`           | Automated system decisions        |
 | `manual_review_cases` | Human review cases                |
 | `users`               | System users/reviewers            |
-| `audit_events`        | Complete system audit trail       |
+| `audit_logs`          | Complete system audit trail       |
 
 ---
 
@@ -313,7 +313,7 @@ It stores the basic information about every cheque entering the system.
 | `payee_name`        | VARCHAR   | Extracted payee                |
 | `amount`            | NUMERIC   | Cheque amount                  |
 | `cheque_date`       | DATE      | Date printed/written on cheque |
-| `routing_number`    | VARCHAR   | Routing/transit number         |
+| `routing_transit_number` | VARCHAR | Extracted routing/transit number |
 | `image_path`        | TEXT      | Reference to cheque image      |
 | `processing_status` | VARCHAR   | Current processing state       |
 | `created_at`        | TIMESTAMP | Upload time                    |
@@ -589,9 +589,9 @@ Passwords must **never be stored in plain text**.
 
 ---
 
-# 22. Audit Events Table
+# 22. Audit Logs Table
 
-The `audit_events` table is critical for the project.
+The `audit_logs` table is critical for the project.
 
 It records important actions performed by the system and users.
 
@@ -612,17 +612,7 @@ Reviewer rejected
 
 ### Fields
 
-| Field               | Description                      |
-| ------------------- | -------------------------------- |
-| `audit_id`          | Unique audit ID                  |
-| `cheque_id`         | Associated cheque                |
-| `user_id`           | User responsible, if applicable  |
-| `event_type`        | Event type                       |
-| `event_description` | Event details                    |
-| `old_value`         | Previous value if applicable     |
-| `new_value`         | New value if applicable          |
-| `timestamp`         | Event time                       |
-| `ip_address`        | Source address where appropriate |
+The canonical field list for this table is defined in `docs/27_Audit_Trail.md` §13 (table `audit_logs`): `audit_id`, `cheque_id`, `event_type`, `event_timestamp`, `user_id`, `user_role`, `source`, `previous_status`, `new_status`, `action`, `result`, `reason`, `request_id`, `ip_address`, `metadata`. See that document for the full schema and DDL.
 
 ---
 
@@ -680,7 +670,7 @@ The core database relationship can be represented as:
                             │
                             ▼
                      ┌──────────────┐
-                     │ AUDIT_EVENTS │
+                     │ AUDIT_LOGS   │
                      └──────────────┘
 ```
 
@@ -739,7 +729,7 @@ The database processing flow is:
         13. Reviewer Decision
                 │
                 ▼
-        14. AUDIT_EVENT
+        14. AUDIT_LOG
 ```
 
 ---
@@ -817,8 +807,8 @@ manual_review_cases.status
 manual_review_cases.priority
 manual_review_cases.assigned_reviewer_id
 
-audit_events.cheque_id
-audit_events.timestamp
+audit_logs.cheque_id
+audit_logs.event_timestamp
 ```
 
 Indexes will improve dashboard queries, review-queue retrieval, duplicate searches, and reporting.

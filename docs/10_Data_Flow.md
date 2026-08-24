@@ -261,7 +261,7 @@ Example:
     "value": "102345",
     "confidence": 0.98
   },
-  "payee": {
+  "payee_name": {
     "value": "ABC TRADERS",
     "confidence": 0.96
   },
@@ -284,8 +284,8 @@ Example:
 {
   "cheque_number": "102345",
   "account_number": "ACC100001",
-  "routing_number": "ROUT001",
-  "payee": "ABC TRADERS",
+  "routing_transit_number": "ROUT001",
+  "payee_name": "ABC TRADERS",
   "amount": 25000.00,
   "date": "2026-08-20"
 }

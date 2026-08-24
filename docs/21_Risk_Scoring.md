@@ -591,8 +591,10 @@ This makes the system easier for a manual reviewer to understand.
 
 ### Endpoint
 
+Per ADR-0007, `docs/26_API_Specification.md` is the canonical endpoint contract; the risk-scoring endpoint is nested under the cheque resource:
+
 ```http
-POST /api/v1/risk-score/calculate
+POST /api/v1/cheques/{cheque_id}/risk-score
 ```
 
 ### Request
@@ -700,24 +702,23 @@ This allows the project team to modify scoring during evaluation without changin
 
 # 23. Database Design
 
-A dedicated `risk_scores` table can store each calculation.
+Each calculation is stored in the `risk_assessments` table. Per the canonical schema in `docs/25_Database_Schema.md` §14, its fields are:
 
-Suggested fields:
+| Field                 | Description                          |
+| --------------------- | ------------------------------------- |
+| `risk_id`             | Unique risk record                    |
+| `cheque_id`           | Associated cheque                     |
+| `fraud_score`         | Fraud/tampering contribution          |
+| `validation_score`    | Validation contribution               |
+| `signature_score`     | Signature contribution                |
+| `duplicate_score`     | Duplicate contribution                |
+| `anomaly_score`       | Anomaly contribution                  |
+| `overall_risk_score`  | Combined score from 0–100             |
+| `risk_level`          | LOW/MEDIUM/HIGH/CRITICAL              |
+| `model_version`       | Version of scoring logic              |
+| `created_at`          | Timestamp                             |
 
-| Field              | Description              |
-| ------------------ | ------------------------ |
-| `risk_id`          | Unique risk record       |
-| `cheque_id`        | Associated cheque        |
-| `risk_score`       | Score from 0–100         |
-| `risk_level`       | LOW/MEDIUM/HIGH/CRITICAL |
-| `tampering_score`  | Tampering contribution   |
-| `signature_score`  | Signature contribution   |
-| `duplicate_score`  | Duplicate contribution   |
-| `anomaly_score`    | Anomaly contribution     |
-| `validation_score` | Validation contribution  |
-| `ocr_score`        | OCR contribution         |
-| `model_version`    | Version of scoring logic |
-| `created_at`       | Timestamp                |
+Note: the image-tampering and OCR/data-confidence contributions described in Sections 8 and 13 of this document are combined into `fraud_score` at storage time rather than kept as separate `tampering_score`/`ocr_score` columns, so this table matches the single canonical schema in `25_Database_Schema.md` rather than defining a second, divergent one.
 
 ---
 

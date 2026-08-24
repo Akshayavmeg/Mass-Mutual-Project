@@ -473,7 +473,7 @@ Date: 15/08/2026"
 Structured Data:
 
 {
-  "payee": "John Doe",
+  "payee_name": "John Doe",
   "amount": 25000.00,
   "date": "2026-08-15"
 }
@@ -615,7 +615,7 @@ A more detailed representation can be maintained:
       "value": "1002345678",
       "confidence": 97
     },
-    "payee": {
+    "payee_name": {
       "value": "John Doe",
       "confidence": 96
     },
@@ -1030,7 +1030,7 @@ Field Extraction
 {
   "cheque_number": "000123",
   "account_number": "1002345678",
-  "payee": "John Doe",
+  "payee_name": "John Doe",
   "amount": 25000.00,
   "date": "2026-08-15"
 }

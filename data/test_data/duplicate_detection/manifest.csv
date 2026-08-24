@@ -1,0 +1,6 @@
+test_case,source_cheque_id,file,expected_result
+exact_duplicate,CHK-2026-000009,test_data/duplicate_detection/exact_duplicates/CHK-2026-000009_exact_copy.png,CONFIRMED_DUPLICATE
+near_duplicate,CHK-2026-000009,test_data/duplicate_detection/near_duplicates/CHK-2026-000009_near_variant.jpg,POTENTIAL_DUPLICATE
+unique_cheque,CHK-2026-000001,test_data/duplicate_detection/unique_cheques/CHK-2026-000001.png,NEW
+unique_cheque,CHK-2026-000002,test_data/duplicate_detection/unique_cheques/CHK-2026-000002.png,NEW
+unique_cheque,CHK-2026-000003,test_data/duplicate_detection/unique_cheques/CHK-2026-000003.png,NEW

@@ -998,7 +998,7 @@ POST /api/v1/anomaly/analyze
   "account_number": "1002345678",
   "amount": 450000,
   "cheque_date": "2026-08-20",
-  "payee": "Unknown Company"
+  "payee_name": "Unknown Company"
 }
 ```
 

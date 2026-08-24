@@ -723,7 +723,7 @@ Example:
     "value": "1002345678",
     "confidence": 97
   },
-  "payee": {
+  "payee_name": {
     "value": "John Doe",
     "confidence": 96
   },

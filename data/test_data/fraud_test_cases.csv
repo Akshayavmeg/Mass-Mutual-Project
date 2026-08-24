@@ -1,0 +1,11 @@
+test_id,scenario,cheque_id,expected_result
+FRA-001,Normal cheque,CHK-2026-000001,Legitimate
+FRA-002,Duplicate cheque,CHK-2026-000010,Fraud indicator
+FRA-003,Signature mismatch,CHK-2026-000041,Suspicious
+FRA-004,Image tampering,CHK-2026-000033,Suspicious/Fraud
+FRA-005,Unusual amount,CHK-2026-000081,Anomaly
+FRA-006,Payee mismatch,CHK-2026-000025,Suspicious
+FRA-007,Closed account,CHK-2026-000053,Validation failure
+FRA-008,Multiple fraud indicators,CHK-2026-000081,High risk
+FRA-009,Clear legitimate cheque,CHK-2026-000001,Low risk
+FRA-010,Low-confidence OCR + anomaly,CHK-2026-000081,Review

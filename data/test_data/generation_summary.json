@@ -1,0 +1,33 @@
+{
+  "generated_at": "2026-08-23T22:44:36.258923",
+  "seed": 20260823,
+  "processing_date": "2026-08-23",
+  "counts": {
+    "customers": 40,
+    "accounts": 45,
+    "payees": 25,
+    "cheque_issuance_records": 2250,
+    "transactions": 266,
+    "reference_signatures": 82,
+    "sample_cheques": 92,
+    "processed_cheques_history": 274,
+    "validation_test_cases": 10,
+    "anomaly_test_cases": 23,
+    "fraud_labels": 92,
+    "duplicate_detection_manifest_entries": 5,
+    "signature_test_manifest_entries": 20
+  },
+  "categories_generated": [
+    "AMOUNT_TAMPERED",
+    "CHEQUE_SERIES_ANOMALY",
+    "DUPLICATE",
+    "FUTURE_DATED",
+    "INVALID_ACCOUNT",
+    "MULTIPLE_ANOMALIES",
+    "PAYEE_TAMPERED",
+    "SIGNATURE_MISMATCH",
+    "STALE_CHEQUE",
+    "STOPPED_CHEQUE",
+    "VALID"
+  ]
+}

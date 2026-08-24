@@ -6,4 +6,4 @@ This repository contains the documentation, architecture, source code, data, mac
 
 Detailed project documentation is maintained under the `docs/` directory.
 
-Do NOT add detailed project implementation yet.
+Project documentation (requirements, architecture, and design specifications) is complete under `docs/`. Implementation is proceeding milestone by milestone; see `docs/35_MVP_Roadmap.md` (Section 4.1) and `docs/36_Development_Guidelines.md` for the development approach. All code, configuration, and data in this repository must continue to follow the constraints documented there — most importantly, no real customer or banking information may be used; only synthetic/mock data is permitted.

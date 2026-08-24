@@ -1,0 +1,41 @@
+# Pinned to the versions verified to install and pass tests together on
+# Python 3.14 (see Milestone 0 report). OCR/CV dependencies (Tesseract,
+# OpenCV) and ML dependencies (scikit-learn) are intentionally not included
+# yet -- they belong to the milestones that actually use them.
+
+fastapi==0.141.1
+uvicorn[standard]==0.52.4
+pydantic==2.13.4
+pydantic-settings==2.15.0
+SQLAlchemy==2.0.52
+alembic==1.19.1
+psycopg[binary]==3.3.4
+python-dotenv==1.2.3
+PyYAML==6.0.3
+python-multipart==0.0.32
+pytest==9.1.1
+pytest-cov==7.1.0
+httpx==0.28.1
+
+# Milestone 1 (Data Foundation): synthetic dataset generation/validation.
+# pandas/numpy are part of the documented tech stack (docs/11 S10) for
+# exactly this purpose; Pillow renders the fictional/generic sample cheque
+# and signature images consumed by later milestones.
+pandas==3.0.5
+numpy==2.5.2
+Pillow==12.3.0
+
+# Milestone 2 (Cheque Upload & Image Processing): OpenCV is the documented
+# computer-vision library (docs/13 S18); opencv-python-headless is used
+# instead of opencv-python since this runs in a server/backend context
+# with no GUI. PyMuPDF renders the first page of an uploaded PDF cheque
+# to an image (docs/12 S8) without requiring an external Poppler binary.
+opencv-python-headless==5.0.0.93
+pymupdf==1.28.2
+
+# Milestone 3 (OCR & Cheque Data Extraction): PyTesseract is the Python
+# wrapper for Tesseract OCR per ADR-0002. The native Tesseract binary
+# itself (v5.4.0, installed via `winget install UB-Mannheim.TesseractOCR`)
+# is a separate, non-pip system dependency -- see app/core/config.py's
+# tesseract_cmd_path setting and the Milestone 3 report for details.
+pytesseract==0.3.13

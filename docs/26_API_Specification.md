@@ -264,7 +264,7 @@ GET /api/v1/cheques/CHK-2026-000001
   "cheque_id": "CHK-2026-000001",
   "cheque_number": "004521",
   "account_number": "XXXXXX4521",
-  "routing_number": "110000001",
+  "routing_transit_number": "110000001",
   "payee_name": "ABC Supplies",
   "amount": 25000.00,
   "cheque_date": "2026-08-12",
@@ -365,7 +365,7 @@ GET /api/v1/cheques/{cheque_id}/ocr
   "extracted_data": {
     "cheque_number": "004521",
     "account_number": "XXXXXX4521",
-    "routing_number": "110000001",
+    "routing_transit_number": "110000001",
     "payee_name": "ABC Supplies",
     "amount": "25000.00",
     "date": "2026-08-12"

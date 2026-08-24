@@ -629,8 +629,10 @@ Response:
 
 # 22. Submit Review Decision
 
+Per ADR-0007, `docs/26_API_Specification.md` is the canonical endpoint contract for this operation:
+
 ```http
-POST /api/v1/reviews/{review_case_id}/decision
+POST /api/v1/reviews/{review_case_id}/complete
 ```
 
 Example:

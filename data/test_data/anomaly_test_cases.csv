@@ -1,0 +1,24 @@
+test_id,account_number,amount,payee_name,historical_average,historical_transaction_count,category,notes
+ANOM-001,9000010004,13246.88,Cedar Imports,14221.49,6,NORMAL,Amount and payee consistent with history.
+ANOM-002,9000010035,14956.45,Beacon Partners,16527.51,13,NORMAL,Amount and payee consistent with history.
+ANOM-003,9000010015,13762.14,Kwame Johnson,12549.41,7,NORMAL,Amount and payee consistent with history.
+ANOM-004,9000010004,15809.99,Cedar Imports,14221.49,6,NORMAL,Amount and payee consistent with history.
+ANOM-005,9000010009,10667.29,Dara Reyes,11426.13,6,NORMAL,Amount and payee consistent with history.
+ANOM-006,9000010015,218078.53,Kwame Johnson,12549.41,7,AMOUNT_ANOMALY_HIGH,Amount far exceeds historical average.
+ANOM-007,9000010016,572854.31,Willow Traders,16229.89,7,AMOUNT_ANOMALY_HIGH,Amount far exceeds historical average.
+ANOM-008,9000010028,198.22,Ironwood Holdings,9910.96,7,AMOUNT_ANOMALY_LOW,Amount far below historical average.
+ANOM-009,9000010011,102.41,Harbor Services,5120.58,7,AMOUNT_ANOMALY_LOW,Amount far below historical average.
+ANOM-010,9000010032,14544.47,Maple Supplies,14544.47,10,FREQUENCY_ANOMALY,Represents one of >10 cheques issued on this account within 48 hours (see notes).
+ANOM-011,9000010008,10686.13,Foundry Supplies,10686.13,12,FREQUENCY_ANOMALY,Represents one of >10 cheques issued on this account within 48 hours (see notes).
+ANOM-012,9000010020,12839.08,Sofia Ahmed,12839.08,13,FREQUENCY_ANOMALY,Represents one of >10 cheques issued on this account within 48 hours (see notes).
+ANOM-013,9000010013,4211.87,Foundry Supplies,4211.87,10,PAYEE_ANOMALY,Payee not previously seen on this account.
+ANOM-014,9000010008,10686.13,Kwame Rossi,10686.13,12,PAYEE_ANOMALY,Payee not previously seen on this account.
+ANOM-015,9000010032,14544.47,Foundry Supplies,14544.47,10,PAYEE_ANOMALY,Payee not previously seen on this account.
+ANOM-016,9000010026,4959.94,Foundry Supplies,4959.94,12,SEQUENCE_ANOMALY,Cheque number gap far outside the account's expected sequence.
+ANOM-017,9000010029,11553.23,Foundry Systems,11553.23,10,SEQUENCE_ANOMALY,Cheque number gap far outside the account's expected sequence.
+ANOM-018,9000010004,14221.49,Cedar Imports,14221.49,6,SEQUENCE_ANOMALY,Cheque number gap far outside the account's expected sequence.
+ANOM-019,9000010020,246261.3,Foundry Supplies,12839.08,13,MULTIPLE_ANOMALIES,High amount + new payee + high frequency combined.
+ANOM-020,9000010025,104653.21,Foundry Supplies,6708.56,10,MULTIPLE_ANOMALIES,High amount + new payee + high frequency combined.
+ANOM-021,9000010039,5184.92,Sanjay Garcia,,0,COLD_START,New account with insufficient history; must not be auto-classified as anomalous.
+ANOM-022,9000010040,5984.35,Ironwood Holdings,,0,COLD_START,New account with insufficient history; must not be auto-classified as anomalous.
+ANOM-023,9000010041,8953.57,Harbor Trading Co,,0,COLD_START,New account with insufficient history; must not be auto-classified as anomalous.

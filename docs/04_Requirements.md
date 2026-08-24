@@ -768,7 +768,7 @@ The proposed system may use the following technologies:
 | Category           | Proposed Technology                         |
 | ------------------ | ------------------------------------------- |
 | Frontend           | React + Vite                                |
-| Backend            | Python + Flask                              |
+| Backend            | Python + FastAPI                            |
 | OCR                | Tesseract / Google Vision / Azure AI Vision |
 | Image Processing   | OpenCV                                      |
 | AI/ML              | Python, TensorFlow / scikit-learn           |
@@ -779,7 +779,7 @@ The proposed system may use the following technologies:
 | Cloud              | AWS / Azure / GCP                           |
 | Version Control    | Git + GitHub                                |
 
-Technology choices will be finalized through the project's Architecture Decision Records.
+Technology choices are finalized through the project's Architecture Decision Records (`docs/adr/`); see ADR-0001 for the backend technology decision.
 
 ---
 

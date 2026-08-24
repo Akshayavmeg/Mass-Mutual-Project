@@ -1,0 +1,11 @@
+test_id,name,cheque_id,input,expected
+VAL-001,Valid Account,CHK-2026-000001,account=9000010020,PASS
+VAL-002,Unknown Account,CHK-2026-000049,account=9000099901,FAIL
+VAL-003,Closed Account,CHK-2026-000053,account=9000010034 status=BLOCKED,FAIL
+VAL-004,Valid Cheque Series,CHK-2026-000001,cheque_number=002020 series=[000100-000149],PASS
+VAL-005,Invalid Cheque Series,CHK-2026-000073,cheque_number=000634,FAIL
+VAL-006,Future-Dated Cheque,CHK-2026-000089,cheque_date=2026-09-28 processing_date=2026-08-23,FAIL
+VAL-007,Payee Match,CHK-2026-000001,payee=Bluepeak Distributors expected=Bluepeak Distributors,PASS
+VAL-008,Payee Mismatch,CHK-2026-000025,payee=Grace Rossi expected=Diego Okafor,FAIL
+VAL-009,Duplicate,CHK-2026-000010,account=9000010022 cheque_number=002223,FAIL
+VAL-010,Amount Mismatch,CHK-2026-000033,amount=8650.21 words='Two Thousand Three Hundred Sixty and 18/100 Only',FAIL

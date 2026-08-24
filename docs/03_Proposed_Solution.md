@@ -415,7 +415,7 @@ The proposed implementation will use:
 | Layer            | Technology                                    |
 | ---------------- | --------------------------------------------- |
 | Frontend         | React + Vite                                  |
-| Backend          | Python + Flask                                |
+| Backend          | Python + FastAPI                              |
 | OCR              | Tesseract / Google Vision / Azure AI Vision   |
 | Image Processing | OpenCV                                        |
 | AI/ML            | Python, scikit-learn / TensorFlow as required |
@@ -426,7 +426,7 @@ The proposed implementation will use:
 | Cloud            | AWS / Azure / GCP                             |
 | Version Control  | Git + GitHub                                  |
 
-The exact technology choices will be documented in the Technology Stack and Architecture Decision Records.
+The exact technology choices are documented in the Technology Stack (`11_Technology_Stack.md`) and Architecture Decision Records (`docs/adr/`); see ADR-0001 for the backend technology decision.
 
 ---
 

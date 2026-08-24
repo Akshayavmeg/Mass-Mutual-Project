@@ -337,7 +337,7 @@ Example:
 {
   "cheque_number": "102345",
   "account_number": "XXXXXX7890",
-  "payee": "ABC TRADERS",
+  "payee_name": "ABC TRADERS",
   "amount": 25000.00,
   "date": "2026-08-20",
   "currency": "INR",

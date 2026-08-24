@@ -112,6 +112,29 @@ Phase 14 → Deployment Preparation
 
 ---
 
+# 4.1 Milestone Mapping (0–9 Implementation Plan)
+
+Development execution for this project is tracked using an official **Milestone 0–9 plan**, agreed as the governing sequence for implementation. Each milestone maps onto one or more of the Phases defined in Section 4 / Sections 5–29 below, so the two numbering schemes describe the same work at different granularity. This mapping is the authoritative crosswalk between the two.
+
+| Milestone | Name | Corresponding Phase(s) |
+| --- | --- | --- |
+| 0 | Repository & Development Foundation | Phase 1 — Project Foundation |
+| 1 | Data Foundation | Phase 2 — Synthetic Dataset & Mock Banking Data |
+| 2 | Cheque Upload & Image Processing | Phase 3 — Cheque Input Module; Phase 4 — Image Preprocessing |
+| 3 | OCR & Cheque Data Extraction | Phase 5 — OCR Engine; Phase 6 — Cheque Data Extraction |
+| 4 | Validation Engine | Phase 7 — Validation Engine |
+| 5 | Fraud Detection | Phase 8 — Fraud Detection; Phase 10 — Duplicate Detection |
+| 6 | Signature Analysis, Anomaly Detection & Risk Scoring | Phase 9 — Signature Analysis; Phase 11 — Anomaly Detection; Phase 12 — Risk Scoring |
+| 7 | Decision Engine & Manual Review | Phase 13 — Decision Engine; Phase 14 — Manual Review Workflow |
+| 8 | Database, API & Audit Trail | Phase 15 — Database Implementation; Phase 16 — Audit Trail; Phase 19 — API Integration |
+| 9 | Frontend Dashboard & Complete Integration | Phase 17 — Dashboard; Phase 18 — Reporting; Phase 24 — End-to-End Integration |
+
+Testing and evaluation (Phase 20 — Testing, Phase 21 — OCR Evaluation, Phase 22 — Fraud Model Evaluation, Phase 23 — Performance Evaluation) are not a separate milestone; per the project's development rules, relevant tests are created and run continuously within each milestone as its functionality is built. Phase 25 — MVP Demonstration is performed as final acceptance after Milestone 9 is complete, using the deliverables from all prior milestones.
+
+Deployment-preparation activities referenced elsewhere in this roadmap (Phase 14 in the Section 4 summary, and `37_Deployment_Architecture.md`) remain out of scope for Milestones 0–9 and are deferred to a future phase, consistent with `40_Future_Roadmap.md`.
+
+---
+
 # 5. Phase 1 — Project Foundation
 
 ### Objective
@@ -340,7 +363,7 @@ Structured output:
 {
   "cheque_number": "100001",
   "account_number": "9000012345",
-  "payee": "Sample Corporation",
+  "payee_name": "Sample Corporation",
   "amount": 12500.00,
   "date": "2026-08-01"
 }

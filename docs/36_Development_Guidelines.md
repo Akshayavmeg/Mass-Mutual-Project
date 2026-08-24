@@ -391,7 +391,7 @@ Example:
 {
   "cheque_number": "100001",
   "account_number": "9000012345",
-  "payee": "Sample Corporation",
+  "payee_name": "Sample Corporation",
   "amount": 12500.00,
   "date": "2026-08-01"
 }

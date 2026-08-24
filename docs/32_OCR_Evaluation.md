@@ -111,7 +111,7 @@ The `ocr_ground_truth.csv` file will contain the correct values corresponding to
 Example:
 
 ```csv
-image_id,cheque_number,account_number,routing_number,payee,amount,date
+image_id,cheque_number,account_number,routing_transit_number,payee_name,amount,date
 CHK001,100001,9000012345,021000021,Sample Corporation,12500.00,2026-08-01
 CHK002,100002,9000012346,021000021,Demo Enterprises,7500.00,2026-08-03
 ```
@@ -216,8 +216,8 @@ Example:
 {
   "cheque_number": "100001",
   "account_number": "9000012345",
-  "routing_number": "021000021",
-  "payee": "Sample Corporation",
+  "routing_transit_number": "021000021",
+  "payee_name": "Sample Corporation",
   "amount": "12500.00",
   "date": "2026-08-01"
 }

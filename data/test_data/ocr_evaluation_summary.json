@@ -1,0 +1,38 @@
+{
+  "evaluated_at": "2026-08-23T22:47:29",
+  "dataset_size": 92,
+  "evaluated_fields": [
+    "cheque_number",
+    "account_number",
+    "routing_transit_number",
+    "payee_name",
+    "amount",
+    "date"
+  ],
+  "field_accuracy": {
+    "cheque_number": 96.74,
+    "account_number": 98.91,
+    "routing_transit_number": 100.0,
+    "payee_name": 100.0,
+    "amount": 100.0,
+    "date": 100.0
+  },
+  "overall_field_level_accuracy_percent": 99.28,
+  "project_target_percent": 95,
+  "target_achieved": true,
+  "ocr_status_counts": {
+    "COMPLETED": 92
+  },
+  "extraction_status_counts": {
+    "COMPLETED": 90,
+    "PARTIAL": 2
+  },
+  "performance_ms": {
+    "ocr_mean": 946.88,
+    "ocr_max": 1457.24,
+    "extraction_mean": 2.45,
+    "extraction_max": 16.71
+  },
+  "total_evaluation_wall_time_seconds": 99.61,
+  "note": "Ground truth is the value actually printed on each cheque image, not the bank's expected_* record -- OCR can only read what is physically on the page. This is a measured result from running the real pipeline against the Milestone 1 synthetic dataset; it is not a claim about production or real-world OCR accuracy."
+}

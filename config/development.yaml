@@ -1,0 +1,7 @@
+# Overrides applied on top of settings.yaml when ENVIRONMENT=development.
+
+app:
+  debug: true
+
+logging:
+  level: "DEBUG"

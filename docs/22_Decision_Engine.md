@@ -518,8 +518,10 @@ Example:
 
 ### Endpoint
 
+Per ADR-0007, `docs/26_API_Specification.md` is the canonical endpoint contract; the decision endpoint is nested under the cheque resource:
+
 ```http
-POST /api/v1/decisions/evaluate
+POST /api/v1/cheques/{cheque_id}/decision
 ```
 
 ### Request

@@ -1,0 +1,7 @@
+# Overrides applied on top of settings.yaml when ENVIRONMENT=testing.
+
+app:
+  debug: true
+
+logging:
+  level: "WARNING"

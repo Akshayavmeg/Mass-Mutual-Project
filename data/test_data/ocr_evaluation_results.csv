@@ -1,0 +1,7 @@
+field,total_tested,correct,accuracy_percent
+cheque_number,92,89,96.74
+account_number,92,91,98.91
+routing_transit_number,92,92,100.0
+payee_name,92,92,100.0
+amount,92,92,100.0
+date,92,92,100.0

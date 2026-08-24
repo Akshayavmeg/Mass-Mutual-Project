@@ -1,6 +1,7 @@
 # Dependencies
 node_modules/
 venv/
+.venv/
 env/
 __pycache__/
 *.pyc
@@ -10,10 +11,13 @@ dist/
 build/
 *.egg-info/
 
-# Environment variables
+# Environment variables and secrets (docs/28_Security_and_Privacy.md)
 .env
-.env.local
-.env.*.local
+.env.*
+!.env.example
+*.key
+*.pem
+secrets/
 
 # IDE
 .vscode/*
@@ -28,10 +32,15 @@ Thumbs.db
 *.log
 logs/
 
-# Data (sensitive/large files)
-*.csv
-*.xlsx
+# Data (sensitive/large files) -- synthetic data generated for the project
+# still ships as .csv under data/, so it is tracked deliberately per file
+# rather than through a blanket *.csv ignore rule.
 !data/**/.gitkeep
+
+# Runtime upload storage (docs/13_Image_Preprocessing.md S23) -- holds
+# copies of whatever is uploaded at runtime and must never be committed,
+# even though in this project it only ever contains synthetic test data.
+data/runtime/
 
 # Models (large binary files)
 *.pkl
