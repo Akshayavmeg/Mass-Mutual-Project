@@ -63,7 +63,21 @@ class InMemoryReviewCaseRepository:
 
 
 _repository = InMemoryReviewCaseRepository()
+_postgres_repository = None
 
 
-def get_review_repository() -> InMemoryReviewCaseRepository:
+def get_review_repository() -> ReviewCaseRepository:
+    """Milestone 8: returns the PostgreSQL-backed repository when a
+    reachable database is configured; otherwise falls back to the
+    in-memory repository already used by Milestone 7 -- see
+    app.repositories.db_availability and the Milestone 8 report."""
+    global _postgres_repository
+    from app.repositories.db_availability import postgres_available
+
+    if postgres_available():
+        if _postgres_repository is None:
+            from app.repositories.postgres_review_repository import PostgresReviewCaseRepository
+
+            _postgres_repository = PostgresReviewCaseRepository()
+        return _postgres_repository
     return _repository

@@ -22,6 +22,7 @@ from datetime import datetime, timezone
 
 from app.core.config import settings
 from app.repositories.review_repository import get_review_repository
+from app.services.audit import audit_service
 from app.services.review import id_generator
 from app.services.review.exceptions import (
     InvalidReviewDecisionError,
@@ -92,6 +93,11 @@ def create_review_case(cheque_id: str, *, decision_result: dict, record: dict) -
         "workflow_version": settings.review_workflow_version,
     }
     repo.save(review_case_id, case)
+    audit_service.record(
+        event_type="REVIEW_CREATED", cheque_id=cheque_id, source="SYSTEM",
+        new_status="QUEUED", action="CREATE_REVIEW_CASE", result="SUCCESS",
+        reason=case["trigger_reason"], metadata={"review_case_id": review_case_id, "priority": priority},
+    )
     return case
 
 
@@ -131,6 +137,11 @@ def assign_case(review_case_id: str, *, reviewer_id: str) -> dict:
         "assigned_reviewer_id": reviewer_id, "status": "ASSIGNED",
         "assigned_at": _now(), "updated_at": _now(),
     })
+    audit_service.record(
+        event_type="REVIEW_ASSIGNED", cheque_id=case["cheque_id"], user_id=reviewer_id, user_role="REVIEWER",
+        source="USER", previous_status=case["status"], new_status="ASSIGNED", action="ASSIGN_REVIEW_CASE",
+        result="SUCCESS", metadata={"review_case_id": review_case_id},
+    )
     return repo.get(review_case_id)
 
 
@@ -143,6 +154,11 @@ def add_comment(review_case_id: str, *, author: str, comment: str) -> dict:
     comments.append({"author": author, "comment": comment, "timestamp": _now()})
     new_status = "UNDER_REVIEW" if case["status"] in ("QUEUED", "ASSIGNED") else case["status"]
     repo.update(review_case_id, {"comments": comments, "status": new_status, "updated_at": _now()})
+    audit_service.record(
+        event_type="REVIEW_COMMENTED", cheque_id=case["cheque_id"], user_id=author, user_role="REVIEWER",
+        source="USER", previous_status=case["status"], new_status=new_status, action="ADD_REVIEW_COMMENT",
+        result="SUCCESS", reason=comment, metadata={"review_case_id": review_case_id},
+    )
     return repo.get(review_case_id)
 
 
@@ -154,6 +170,11 @@ def escalate_case(review_case_id: str, *, reason: str, escalated_by: str) -> dic
     repo.update(review_case_id, {
         "status": "ESCALATED", "priority": "CRITICAL", "escalation_reason": reason, "updated_at": _now(),
     })
+    audit_service.record(
+        event_type="REVIEW_ESCALATED", cheque_id=case["cheque_id"], user_id=escalated_by, user_role="REVIEWER",
+        source="USER", previous_status=case["status"], new_status="ESCALATED", action="ESCALATE_REVIEW_CASE",
+        result="SUCCESS", reason=reason, metadata={"review_case_id": review_case_id},
+    )
     return add_comment(review_case_id, author=escalated_by, comment=f"Escalated: {reason}")
 
 
@@ -185,12 +206,24 @@ def complete_review(review_case_id: str, *, decision: str, comment: str, reviewe
         "updated_at": now,
     })
 
+    final_cheque_status = "APPROVED" if decision == "APPROVE" else "REJECTED"
     from app.repositories.cheque_repository import get_cheque_repository
     get_cheque_repository().update(case["cheque_id"], {
-        "processing_status": "APPROVED" if decision == "APPROVE" else "REJECTED",
+        "processing_status": final_cheque_status,
         "human_decision": {
             "decision": decision, "reviewer_id": reviewer_id, "comment": comment, "timestamp": now,
             "review_case_id": review_case_id,
         },
     })
+    audit_service.record(
+        event_type="REVIEW_COMPLETED", cheque_id=case["cheque_id"], user_id=reviewer_id, user_role="REVIEWER",
+        source="USER", previous_status=case["status"], new_status="CLOSED", action="COMPLETE_REVIEW",
+        result=decision, reason=comment, metadata={"review_case_id": review_case_id},
+    )
+    audit_service.record(
+        event_type="FINAL_DECISION_CHANGED", cheque_id=case["cheque_id"], user_id=reviewer_id, user_role="REVIEWER",
+        source="USER", previous_status=case["automated_decision"].get("decision"), new_status=final_cheque_status,
+        action="HUMAN_OVERRIDE", result=decision, reason=comment,
+        metadata={"automated_decision": case["automated_decision"].get("decision"), "human_decision": decision},
+    )
     return repo.get(review_case_id)

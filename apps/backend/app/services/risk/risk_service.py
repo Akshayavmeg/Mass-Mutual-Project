@@ -22,6 +22,7 @@ from datetime import datetime, timezone
 
 from app.core.config import settings
 from app.repositories.cheque_repository import get_cheque_repository
+from app.services.audit import audit_service
 from app.services.risk.exceptions import FraudAnalysisNotAvailableError
 from app.services.risk.models import RiskAssessmentResult, RiskFactor
 
@@ -181,6 +182,11 @@ def calculate_risk(cheque_id: str) -> RiskAssessmentResult:
     )
 
     repo.update(cheque_id, {"risk_assessment": result.as_dict(), "processing_status": "RISK_SCORED"})
+    audit_service.record(
+        event_type="RISK_SCORE_GENERATED", cheque_id=cheque_id, source="SYSTEM",
+        new_status="RISK_SCORED", action="CALCULATE_RISK", result=risk_level,
+        metadata={"overall_risk_score": overall_score},
+    )
     return result
 
 

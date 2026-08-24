@@ -31,6 +31,7 @@ from datetime import date, datetime, timezone
 from app.core.config import settings
 from app.repositories.banking_repository import BankingDataRepository, BankingDataUnavailableError, get_banking_repository
 from app.repositories.cheque_repository import get_cheque_repository
+from app.services.audit import audit_service
 from app.services.cheque import storage
 from app.services.fraud.detectors import duplicate_detector, image_tampering_detector, pattern_detector, rule_based_detector
 from app.services.fraud.detectors.image_hasher import average_hash_of_bytes
@@ -222,6 +223,11 @@ def analyze_fraud(
         "image_analysis": tampering_result.as_dict(),
     }
     repo.update(cheque_id, {"fraud_analysis": persisted, "processing_status": "FRAUD_ANALYZED"})
+    audit_service.record(
+        event_type="FRAUD_ANALYSIS_COMPLETED", cheque_id=cheque_id, source="SYSTEM",
+        new_status="FRAUD_ANALYZED", action="RUN_FRAUD_ANALYSIS", result=risk_level,
+        metadata={"fraud_risk_score": fraud_risk_score},
+    )
 
     return result
 

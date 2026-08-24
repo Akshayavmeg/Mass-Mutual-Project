@@ -17,6 +17,7 @@ from datetime import date, datetime, timezone
 
 from app.repositories.banking_repository import BankingDataRepository, get_banking_repository
 from app.repositories.cheque_repository import get_cheque_repository
+from app.services.audit import audit_service
 from app.services.validation.exceptions import ChequeNotExtractedError
 from app.services.validation.models import CheckResult, ValidationSummary, compute_overall_status
 from app.services.validation.validators.account_validator import check_account_exists, check_account_status
@@ -125,6 +126,11 @@ def validate_cheque(
         "validation": summary.as_dict(),
         "processing_status": "VALIDATED",
     })
+    audit_service.record(
+        event_type="VALIDATION_COMPLETED", cheque_id=cheque_id, source="SYSTEM",
+        new_status="VALIDATED", action="RUN_VALIDATION", result=overall_status,
+        reason=summary.validation_message,
+    )
 
     return summary
 

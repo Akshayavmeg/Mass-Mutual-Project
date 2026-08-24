@@ -15,6 +15,7 @@ from fastapi import APIRouter, File, UploadFile
 from fastapi.responses import JSONResponse
 
 from app.schemas.anomaly import AnomalyAnalysisResponse
+from app.schemas.audit import AuditHistoryResponse
 from app.schemas.cheque import ChequeDetailResponse, ChequeUploadResponse
 from app.schemas.decision import DecisionResponse
 from app.schemas.fraud import FraudAnalysisResponse
@@ -32,6 +33,7 @@ from app.services.fraud import fraud_service
 from app.services.fraud.exceptions import ChequeNotValidatedError
 from app.services.ocr import pipeline as ocr_pipeline
 from app.services.ocr.exceptions import ChequeNotPreprocessedError
+from app.services.audit import audit_service
 from app.services.risk import risk_service
 from app.services.risk.exceptions import FraudAnalysisNotAvailableError
 from app.services.signature import signature_service
@@ -231,6 +233,16 @@ async def run_risk_score(cheque_id: str):
         return _error_response(422, "FRAUD_ANALYSIS_NOT_RUN", str(exc))
 
     return RiskScoreResponse(**result.as_dict())
+
+
+@router.get("/{cheque_id}/audit", response_model=AuditHistoryResponse)
+async def get_cheque_audit_history(cheque_id: str):
+    record = input_service.get_cheque_record(cheque_id)
+    if record is None:
+        return _error_response(404, "CHEQUE_NOT_FOUND", "The requested cheque does not exist.")
+
+    events = audit_service.get_history(cheque_id)
+    return AuditHistoryResponse(cheque_id=cheque_id, events=events)
 
 
 @router.post("/{cheque_id}/decision", response_model=DecisionResponse)

@@ -1,12 +1,8 @@
-"""SQLAlchemy engine/session setup.
+"""SQLAlchemy engine/session setup (Milestone 8; docs/25_Database_Schema.md,
+ADR-0003).
 
 Per ADR-0003, PostgreSQL is accessed through SQLAlchemy from the backend
 service layer only -- the frontend never connects to the database directly.
-
-No models exist yet: ORM models, repositories, and Alembic migrations are
-introduced in Milestone 8 (Database, API & Audit Trail) once the schema in
-docs/25_Database_Schema.md is implemented. This module only establishes the
-connection/session foundation so later milestones have somewhere to plug in.
 """
 
 from __future__ import annotations
@@ -28,14 +24,17 @@ engine = create_engine(
     settings.database_url,
     pool_pre_ping=True,
     future=True,
-    connect_args={"connect_timeout": 3},
+    pool_size=settings.database_pool_size,
+    max_overflow=settings.database_max_overflow,
+    pool_timeout=settings.database_pool_timeout_seconds,
+    connect_args={"connect_timeout": settings.database_connect_timeout_seconds},
 )
 
 SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False, future=True)
 
 
 class Base(DeclarativeBase):
-    """Declarative base for future ORM models (Milestone 8)."""
+    """Declarative base for all ORM models (app/models/)."""
 
 
 def get_db() -> Generator[Session, None, None]:

@@ -63,6 +63,19 @@ class Settings(BaseSettings):
     database_url: str = "postgresql+psycopg://postgres:postgres@localhost:5432/mass_mutual_db"
     secret_key: str = "changeme-local-development-only"
 
+    # --- Milestone 8: Database connection pool (docs/24 S2, ADR-0003) ---
+    database_pool_size: int = 5
+    database_max_overflow: int = 10
+    database_pool_timeout_seconds: int = 30
+    database_connect_timeout_seconds: int = 3
+    # When no reachable PostgreSQL is configured, the application falls
+    # back to the in-memory/CSV repositories already used by Milestones
+    # 3-7 (see app/repositories/repository_factory.py) rather than
+    # failing every request -- this is an explicit, documented fallback
+    # for environments without a live PostgreSQL server, not a silent
+    # substitute database engine (no SQLite is ever used).
+    use_postgres_repositories: bool = True
+
     log_level: str = "INFO"
     cors_origins: list[str] = ["http://localhost:3000"]
 

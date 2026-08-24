@@ -23,6 +23,7 @@ import numpy as np
 from app.core.config import settings
 from app.repositories.banking_repository import BankingDataRepository, BankingDataUnavailableError, get_banking_repository
 from app.repositories.cheque_repository import get_cheque_repository
+from app.services.audit import audit_service
 from app.services.cheque import storage
 from app.services.preprocessing.preprocessing_service import load_image_bgr
 from app.services.signature import comparator
@@ -122,6 +123,10 @@ def analyze_signature(
         base.update(overrides)
         result = SignatureAnalysisResult(**base)
         repo.update(cheque_id, {"signature_analysis": result.as_dict(), "processing_status": "SIGNATURE_ANALYZED"})
+        audit_service.record(
+            event_type="SIGNATURE_ANALYSIS_COMPLETED", cheque_id=cheque_id, source="SYSTEM",
+            new_status="SIGNATURE_ANALYZED", action="RUN_SIGNATURE_ANALYSIS", result=result.risk_level,
+        )
         return result
 
     if not extraction.get("signature_region_detected"):

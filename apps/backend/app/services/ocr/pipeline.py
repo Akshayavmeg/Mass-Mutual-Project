@@ -8,6 +8,7 @@ persistence concerns.
 from __future__ import annotations
 
 from app.repositories.cheque_repository import get_cheque_repository
+from app.services.audit import audit_service
 from app.services.extraction.extraction_service import extract_cheque_data
 from app.services.ocr.exceptions import ChequeNotPreprocessedError
 from app.services.ocr.ocr_service import run_ocr_for_cheque
@@ -50,11 +51,17 @@ def run_ocr_and_extraction(cheque_id: str) -> dict:
     }
     extraction_dict = extraction_result.as_dict()
 
+    new_status = "OCR_COMPLETED" if ocr_result.status != "FAILED" else "FAILED"
     repo.update(cheque_id, {
         "ocr": ocr_dict,
         "extraction": extraction_dict,
-        "processing_status": "OCR_COMPLETED" if ocr_result.status != "FAILED" else "FAILED",
+        "processing_status": new_status,
     })
+    audit_service.record(
+        event_type="OCR_COMPLETED", cheque_id=cheque_id, source="SYSTEM",
+        new_status=new_status, action="RUN_OCR", result=ocr_result.status,
+        metadata={"confidence_score": ocr_dict["average_confidence"]},
+    )
 
     return {"ocr": ocr_dict, "extraction": extraction_dict}
 

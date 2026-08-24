@@ -11,6 +11,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 
 from app.repositories.cheque_repository import get_cheque_repository
+from app.services.audit import audit_service
 from app.services.cheque import file_validation, id_generator, pdf_conversion, storage
 from app.services.cheque.exceptions import ChequeInputError
 from app.services.preprocessing.preprocessing_service import load_image_bgr, preprocess_image
@@ -49,6 +50,10 @@ def handle_upload(filename: str | None, content: bytes, *, input_source: str = "
     }
     repo = get_cheque_repository()
     repo.save(cheque_id, record)
+    audit_service.record(
+        event_type="CHEQUE_UPLOADED", cheque_id=cheque_id, source="USER",
+        new_status="UPLOADED", action="UPLOAD", result="SUCCESS",
+    )
 
     try:
         if validated.is_pdf:

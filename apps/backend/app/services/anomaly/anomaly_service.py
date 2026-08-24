@@ -30,6 +30,7 @@ from datetime import date, datetime, timezone
 from app.core.config import settings
 from app.repositories.banking_repository import BankingDataRepository, BankingDataUnavailableError, get_banking_repository
 from app.repositories.cheque_repository import get_cheque_repository
+from app.services.audit import audit_service
 from app.services.anomaly.detectors import amount_anomaly, frequency_anomaly, payee_anomaly, sequence_anomaly, transaction_pattern_anomaly
 from app.services.anomaly.exceptions import ChequeNotExtractedForAnomalyError
 from app.services.anomaly.models import AnomalyItem, AnomalyResult
@@ -109,6 +110,11 @@ def analyze_anomaly(
     )
 
     repo.update(cheque_id, {"anomaly_analysis": result.as_dict(), "processing_status": "ANOMALY_ANALYZED"})
+    audit_service.record(
+        event_type="ANOMALY_ANALYSIS_COMPLETED", cheque_id=cheque_id, source="SYSTEM",
+        new_status="ANOMALY_ANALYZED", action="RUN_ANOMALY_ANALYSIS", result=risk_level,
+        metadata={"anomaly_score": anomaly_score},
+    )
     return result
 
 

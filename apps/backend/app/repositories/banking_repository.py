@@ -313,10 +313,23 @@ class CSVBankingDataRepository:
 
 
 _repository: CSVBankingDataRepository | None = None
+_postgres_repository = None
 
 
-def get_banking_repository() -> CSVBankingDataRepository:
-    global _repository
+def get_banking_repository() -> BankingDataRepository:
+    """Milestone 8: returns the PostgreSQL-backed repository when a
+    reachable database is configured; otherwise falls back to the CSV
+    repository already used by Milestones 4-6 -- see
+    app.repositories.db_availability and the Milestone 8 report."""
+    global _repository, _postgres_repository
+    from app.repositories.db_availability import postgres_available
+
+    if postgres_available():
+        if _postgres_repository is None:
+            from app.repositories.postgres_banking_repository import PostgresBankingDataRepository
+
+            _postgres_repository = PostgresBankingDataRepository()
+        return _postgres_repository
     if _repository is None:
         _repository = CSVBankingDataRepository()
     return _repository

@@ -59,7 +59,23 @@ class InMemoryChequeRepository:
 
 
 _repository = InMemoryChequeRepository()
+_postgres_repository = None
 
 
-def get_cheque_repository() -> InMemoryChequeRepository:
+def get_cheque_repository() -> ChequeRecordRepository:
+    """Milestone 8: returns the PostgreSQL-backed repository when a
+    reachable database is configured (ADR-0003's production path);
+    otherwise falls back to the in-memory repository already used by
+    Milestones 3-7 (documented fallback -- see app.repositories.db_availability
+    and the Milestone 8 report). The function name/signature -- and every
+    caller across Milestones 3-7 -- is unchanged."""
+    global _postgres_repository
+    from app.repositories.db_availability import postgres_available
+
+    if postgres_available():
+        if _postgres_repository is None:
+            from app.repositories.postgres_cheque_repository import PostgresChequeRepository
+
+            _postgres_repository = PostgresChequeRepository()
+        return _postgres_repository
     return _repository

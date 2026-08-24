@@ -17,6 +17,7 @@ from datetime import datetime, timezone
 
 from app.core.config import settings
 from app.repositories.cheque_repository import get_cheque_repository
+from app.services.audit import audit_service
 from app.services.decision import decision_rules
 from app.services.decision.exceptions import RiskAssessmentNotAvailableError
 from app.services.decision.models import DecisionResult
@@ -76,7 +77,13 @@ def make_decision(cheque_id: str) -> DecisionResult:
         evidence=_build_evidence(validation, fraud_analysis, signature_analysis, anomaly_analysis, risk_assessment, ocr),
     )
 
-    repo.update(cheque_id, {"decision": result.as_dict(), "processing_status": "DECISION_MADE" if decision != "REVIEW" else "UNDER_REVIEW"})
+    new_status = "DECISION_MADE" if decision != "REVIEW" else "UNDER_REVIEW"
+    repo.update(cheque_id, {"decision": result.as_dict(), "processing_status": new_status})
+    audit_service.record(
+        event_type="DECISION_GENERATED", cheque_id=cheque_id, source="SYSTEM",
+        new_status=new_status, action="GENERATE_DECISION", result=decision,
+        reason=result.decision_reason, metadata={"triggered_rules": triggered_rules},
+    )
 
     if decision == "REVIEW":
         review_service.create_review_case(cheque_id, decision_result=result.as_dict(), record=record)
